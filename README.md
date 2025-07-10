@@ -40,7 +40,7 @@ transactions/
 
 1. **Clone the repository:**
    ```sh
-   git clone <this-repo-url>
+   git clone git@github.com:capricorn-32/transactions.git
    cd transactions
    ```
 2. **Install Go (>=1.24.4) and PostgreSQL.**
