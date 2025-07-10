@@ -8,18 +8,19 @@ import (
 	"net/http/httptest"
 	"testing"
 	"transactions/handler"
+	"transactions/models"
 )
 
 type fakeTransactionService struct{}
 
-func (f *fakeTransactionService) SubmitTransaction(sourceID, destID int64, amount string) error {
+func (f *fakeTransactionService) SubmitTransaction(sourceID, destID int64, amount models.Money) error {
 	if sourceID == 0 || destID == 0 {
 		return errors.New("invalid account id")
 	}
-	if amount == "0" {
+	if amount.Decimal.IsZero() {
 		return errors.New("amount must be positive")
 	}
-	if amount == "9999" {
+	if amount.Decimal.String() == "9999" {
 		return errors.New("insufficient funds")
 	}
 	return nil

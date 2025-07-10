@@ -2,8 +2,8 @@ package handler
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
+	"transactions/models"
 	"transactions/service"
 )
 
@@ -17,9 +17,9 @@ func NewTransactionHandler(service service.TransactionServiceInterface) *Transac
 
 func (h *TransactionHandler) SubmitTransaction(w http.ResponseWriter, r *http.Request) {
 	var req struct {
-		SourceAccountID      int64  `json:"source_account_id"`
-		DestinationAccountID int64  `json:"destination_account_id"`
-		Amount               string `json:"amount"`
+		SourceAccountID      int64        `json:"source_account_id"`
+		DestinationAccountID int64        `json:"destination_account_id"`
+		Amount               models.Money `json:"amount"`
 	}
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		w.Header().Set("Content-Type", "application/json")
@@ -49,17 +49,7 @@ func (h *TransactionHandler) SubmitTransaction(w http.ResponseWriter, r *http.Re
 		})
 		return
 	}
-	if req.Amount == "" {
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode(map[string]interface{}{
-			"success": false,
-			"error":   "amount is required",
-		})
-		return
-	}
-	var amt float64
-	if _, err := fmt.Sscanf(req.Amount, "%f", &amt); err != nil || amt <= 0 {
+	if req.Amount.Decimal.LessThanOrEqual(models.Money{}.Decimal) {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusBadRequest)
 		json.NewEncoder(w).Encode(map[string]interface{}{
