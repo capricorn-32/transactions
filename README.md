@@ -103,20 +103,26 @@ go test ./... -v
   }
   ```
 - **Response:**
-  - `201 Created` on success
-  - `400 Bad Request` on error
+  - `201 Created` on success:
+    ```json
+    { "success": true, "message": "account created successfully" }
+    ```
+  - `400 Bad Request` on error:
+    ```json
+    { "success": false, "error": "error message" }
+    ```
 
 ### Get Account
 - **GET** `/accounts/{account_id}`
 - **Response:**
-  - `200 OK` with JSON body:
+  - `200 OK` on success:
     ```json
-    {
-      "account_id": 1,
-      "balance": "100.00"
-    }
+    { "success": true, "data": { "account_id": 1, "balance": "100.00" } }
     ```
-  - `400 Bad Request` or `404 Not Found` on error
+  - `400 Bad Request` or `404 Not Found` on error:
+    ```json
+    { "success": false, "error": "error message" }
+    ```
 
 ### Submit Transaction
 - **POST** `/transactions`
@@ -129,8 +135,14 @@ go test ./... -v
   }
   ```
 - **Response:**
-  - `201 Created` on success
-  - `400 Bad Request` on error (e.g., insufficient funds)
+  - `201 Created` on success:
+    ```json
+    { "success": true, "message": "transaction submitted successfully" }
+    ```
+  - `400 Bad Request` on error:
+    ```json
+    { "success": false, "error": "error message" }
+    ```
 
 ## Assumptions & Notes
 

@@ -6,6 +6,13 @@ import (
 	"transactions/repository"
 )
 
+// Define the interface here for use in both service and handler
+// TransactionServiceInterface defines the contract for transaction service
+// so it can be used for both real and mock implementations.
+type TransactionServiceInterface interface {
+	SubmitTransaction(sourceID, destID int64, amount string) error
+}
+
 type TransactionService struct {
 	DB   *sql.DB
 	Repo *repository.TransactionRepository
@@ -60,4 +67,6 @@ func (s *TransactionService) SubmitTransaction(sourceID, destID int64, amount st
 		return err
 	}
 	return nil
-} 
+}
+
+var _ TransactionServiceInterface = (*TransactionService)(nil)

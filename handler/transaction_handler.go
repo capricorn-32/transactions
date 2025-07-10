@@ -7,10 +7,10 @@ import (
 )
 
 type TransactionHandler struct {
-	Service *service.TransactionService
+	Service service.TransactionServiceInterface
 }
 
-func NewTransactionHandler(service *service.TransactionService) *TransactionHandler {
+func NewTransactionHandler(service service.TransactionServiceInterface) *TransactionHandler {
 	return &TransactionHandler{Service: service}
 }
 
@@ -21,12 +21,27 @@ func (h *TransactionHandler) SubmitTransaction(w http.ResponseWriter, r *http.Re
 		Amount               string `json:"amount"`
 	}
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		http.Error(w, "invalid request", http.StatusBadRequest)
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(map[string]interface{}{
+			"success": false,
+			"error":   "invalid request",
+		})
 		return
 	}
 	if err := h.Service.SubmitTransaction(req.SourceAccountID, req.DestinationAccountID, req.Amount); err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(map[string]interface{}{
+			"success": false,
+			"error":   err.Error(),
+		})
 		return
 	}
+	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)
-} 
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"success": true,
+		"message": "transaction submitted successfully",
+	})
+}
