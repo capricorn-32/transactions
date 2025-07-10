@@ -1,268 +1,196 @@
 # Transactions Service
 
-A simple Go REST API for managing accounts and transactions, using PostgreSQL as the backend database.
+A simple Go REST API for managing accounts and transactions, built with PostgreSQL.
 
-## Project Structure
+## 🚀 Quick Start
 
-```
-transactions/
-  ├── go.mod
-  ├── go.sum
-  ├── main.go
-  ├── README.md
-  ├── Taskfile.yml
-  ├── config/
-  │     └── config.go
-  ├── db/
-  │     ├── db.go
-  │     └── migrations/
-  │           ├── 000001_accounts.up.sql
-  │           ├── 000001_accounts.down.sql
-  │           ├── 000002_transactions.up.sql
-  │           └── 000002_transactions.down.sql
-  ├── models/
-  │     ├── account.go
-  │     ├── transaction.go
-  │     └── money.go
-  ├── repository/
-  │     ├── account_repository.go
-  │     └── transaction_repository.go
-  ├── service/
-  │     ├── account_service.go
-  │     └── transaction_service.go
-  ├── handler/
-  │     ├── account_handler.go
-  │     └── transaction_handler.go
-  ├── router/
-  │     └── router.go
-  └── tests/
-        ├── account_handler_test.go
-        └── transaction_handler_test.go
-```
-
-## Prerequisites
-
+### Prerequisites
 - **Go** (>=1.24.4)
 - **PostgreSQL** (running instance)
-- **Task** (taskfile.dev) - task runner
-- **golang-migrate** - for database migrations
+- **Task** (taskfile.dev) - [Install here](https://taskfile.dev/installation/)
 
-## Installation
+### One-Command Setup
 
-1. **Clone the repository:**
-   ```sh
-   git clone git@github.com:capricorn-32/transactions.git
-   cd transactions
-   ```
+```bash
+# Clone and setup everything
+git clone git@github.com:capricorn-32/transactions.git
+cd transactions
+task setup
+task migrate
+task run
+```
 
-2. **Install Go dependencies:**
-   ```sh
-   go mod download
-   ```
+That's it! Your API is now running at `http://localhost:8080`.
 
-3. **Install Task (taskfile.dev) for task runner:**
-   ```sh
-   # On Linux (with Homebrew)
-   brew install go-task/tap/go-task
-   
-   # On macOS (with Homebrew)
-   brew install go-task/tap/go-task
-   
-   # On Windows (with Chocolatey)
-   choco install go-task
-   
-   # Or see https://taskfile.dev/installation/ for other methods
-   ```
+## 📋 Available Commands
 
-4. **Install golang-migrate:**
-   ```sh
-   # On Linux/macOS
-   go install -tags 'postgres' github.com/golang-migrate/migrate/v4/cmd/migrate@latest
-   
-   # Or download from https://github.com/golang-migrate/migrate/releases
-   ```
+Run `task` to see all available commands:
 
-## Configuration
+| Command | Description |
+|---------|-------------|
+| `task` | Show all available tasks |
+| `task setup` | Install all dependencies |
+| `task run` | Start the application |
+| `task build` | Build the application |
+| `task test` | Run all tests |
+| `task migrate` | Run database migrations |
+| `task reset` | Reset database (rollback + migrate) |
 
-### Environment Variables
+## 🔧 Configuration
 
-The following environment variables can be configured (defaults shown):
+### Environment Variables (Optional)
 
-- `DB_USER` (default: `postgres`)
-- `DB_PASSWORD` (default: `postgres`)
-- `DB_NAME` (default: `postgres`)
-- `DB_HOST` (default: `localhost`)
-- `DB_PORT` (default: `5433`)
+Set these if you need custom database settings:
 
-You can set these in your shell or in a `.env` file (not committed to version control).
+```bash
+export DB_USER=postgres
+export DB_PASSWORD=postgres
+export DB_HOST=localhost
+export DB_PORT=5433
+export DB_NAME=postgres
+```
 
-### Database Setup
+**Defaults work out of the box** - no configuration needed if using standard PostgreSQL setup.
 
-1. **Ensure PostgreSQL is running** and accessible with the configured credentials
-2. **Run database migrations:**
-   ```sh
-   task migrate
-   ```
+## 🗄️ Database Setup
 
-## Available Tasks
+The project uses PostgreSQL with automatic migrations:
 
-This project uses [Task](https://taskfile.dev) for common development operations. Run `task` to see all available commands.
+```bash
+# First time setup
+task migrate
 
-### Development Tasks
+# Reset database (useful for development)
+task reset
+```
 
-- **`task`** - Show all available tasks with descriptions and usage
-- **`task setup`** - Install all dependencies (Go modules and golang-migrate)
-- **`task run`** - Run the Go application
-- **`task build`** - Build the Go application (outputs to `bin/transactions`)
-- **`task test`** - Run all Go tests with verbose output
+## 🧪 Testing
 
-### Database Tasks
+```bash
+# Run all tests
+task test
+```
 
-- **`task migrate`** - Run all up migrations using golang-migrate
-- **`task reset`** - Rollback all migrations and then run all up migrations (useful for development)
+## 📦 Building
 
-## Quick Start
-1. **Install dependencies:**
-   ```sh
-   task setup
-   ```
+```bash
+# Build for production
+task build
+```
 
-2. **Migrate the database:**
-   ```sh
-   task migrate
-   ```
+The binary will be created at `bin/transactions`.
 
-3. **Start the application:**
-   ```sh
-   task run
-   ```
-   The server will start on `http://localhost:8080` by default.
-
-4. **Run tests:**
-   ```sh
-   task test
-   ```
-
-5. **Build the application:**
-   ```sh
-   task build
-   ```
-
-## API Endpoints
+## 🔌 API Endpoints
 
 ### Create Account
-- **POST** `/accounts`
-- **Request Body:**
-  ```json
-  {
-    "account_id": 1,
-    "initial_balance": "100.00"
-  }
-  ```
-- **Response:**
-  - `201 Created` on success:
-    ```json
-    { "success": true, "message": "account created successfully" }
-    ```
-  - `400 Bad Request` on error:
-    ```json
-    { "success": false, "error": "error message" }
-    ```
+```bash
+POST /accounts
+Content-Type: application/json
+
+{
+  "account_id": 1,
+  "initial_balance": "100.00"
+}
+```
 
 ### Get Account
-- **GET** `/accounts/{account_id}`
-- **Response:**
-  - `200 OK` on success:
-    ```json
-    { "success": true, "data": { "account_id": 1, "balance": "100.00" } }
-    ```
-  - `400 Bad Request` or `404 Not Found` on error:
-    ```json
-    { "success": false, "error": "error message" }
-    ```
+```bash
+GET /accounts/{account_id}
+```
 
 ### Submit Transaction
-- **POST** `/transactions`
-- **Request Body:**
-  ```json
-  {
-    "source_account_id": 1,
-    "destination_account_id": 2,
-    "amount": "50.00"
-  }
-  ```
-- **Response:**
-  - `201 Created` on success:
-    ```json
-    { "success": true, "message": "transaction submitted successfully" }
-    ```
-  - `400 Bad Request` on error:
-    ```json
-    { "success": false, "error": "error message" }
-    ```
+```bash
+POST /transactions
+Content-Type: application/json
 
-## Development Workflow
+{
+  "source_account_id": 1,
+  "destination_account_id": 2,
+  "amount": "50.00"
+}
+```
+
+## 🛠️ Development Workflow
 
 ### Typical Development Session
 
-1. **Start with a clean database state:**
-   ```sh
-   task reset
-   ```
+```bash
+# 1. Reset database to clean state
+task reset
 
-2. **Run the application:**
-   ```sh
-   task run
-   ```
+# 2. Start the application
+task run
 
-3. **In another terminal, run tests:**
-   ```sh
-   task test
-   ```
+# 3. In another terminal, run tests
+task test
 
-4. **Build for deployment:**
-   ```sh
-   task build
-   ```
+# 4. Build for deployment
+task build
+```
 
 ### Database Management
 
-- **Apply new migrations:**
-  ```sh
-  task migrate
-  ```
+```bash
+# Apply new migrations
+task migrate
 
-- **Reset database (useful during development):**
-  ```sh
-  task reset
-  ```
+# Reset database (useful during development)
+task reset
+```
 
-## Assumptions & Notes
+## 📁 Project Structure
 
-- The application expects a running PostgreSQL instance accessible with the provided credentials
-- Default database connection is to `localhost:5433` with user/password `postgres`
-- All balances and amounts are strings representing decimal numbers (e.g., "100.00")
-- No authentication is implemented; all endpoints are public for demo/testing purposes
-- The database schema is managed via SQL files in `db/migrations/`
-- The application uses the [Task](https://taskfile.dev) runner for common dev tasks
-- Database migrations use [golang-migrate](https://github.com/golang-migrate/migrate) for version control
+```
+transactions/
+├── main.go                 # Application entry point
+├── Taskfile.yml           # Task runner configuration
+├── go.mod                 # Go module dependencies
+├── config/
+│   └── config.go         # Configuration management
+├── db/
+│   ├── db.go             # Database connection
+│   └── migrations/       # Database migration files
+├── models/
+│   ├── account.go        # Account model
+│   ├── transaction.go    # Transaction model
+│   └── money.go          # Money handling utilities
+├── repository/
+│   ├── account_repository.go    # Account data access
+│   └── transaction_repository.go # Transaction data access
+├── service/
+│   ├── account_service.go       # Account business logic
+│   └── transaction_service.go   # Transaction business logic
+├── handler/
+│   ├── account_handler.go       # Account HTTP handlers
+│   └── transaction_handler.go   # Transaction HTTP handlers
+├── router/
+│   └── router.go               # HTTP routing
+└── tests/
+    ├── account_handler_test.go
+    └── transaction_handler_test.go
+```
 
-## Troubleshooting
+## 🐛 Troubleshooting
 
 ### Common Issues
 
-1. **Database connection errors:**
-   - Ensure PostgreSQL is running
-   - Verify environment variables are set correctly
-   - Check that the database exists and is accessible
+**Database connection errors:**
+- Ensure PostgreSQL is running
+- Check that the database exists and is accessible
+- Verify environment variables if using custom settings
 
-2. **Migration errors:**
-   - Ensure golang-migrate is installed with postgres support
-   - Check that the database URL is correct
-   - Verify migration files are in the correct format
+**Migration errors:**
+- Run `task setup` to ensure golang-migrate is installed
+- Check that PostgreSQL is running and accessible
 
-3. **Build errors:**
-   - Ensure Go version >=1.24.4
-   - Run `go mod download` to install dependencies
-   - Check that all required environment variables are set
+**Build errors:**
+- Ensure Go version >=1.24.4
+- Run `task setup` to install dependencies
+
+## 📝 Notes
+
+- All balances and amounts are strings representing decimal numbers (e.g., "100.00")
+- No authentication implemented - all endpoints are public for demo/testing
+- Database migrations are managed with golang-migrate
+- The application uses Task for common development operations
 
