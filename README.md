@@ -68,11 +68,7 @@ transactions/
    You can set these in your shell or in a `.env` file (not committed).
 
 2. **Create and migrate the database:**
-   ```sh
-   task migrate
-   # Or, to reset (drop, create, migrate):
-   task reset
-   ```
+   - migrate the tables in database. Schema present in db/migration
 
 ## Running the Application
 
