@@ -26,7 +26,6 @@ func main() {
 	transactionService := service.NewTransactionService(postgresDB, transactionRepo)
 
 	h := handler.NewHandler(accountService, transactionService)
-
 	r := router.NewRouter(h)
 
 	logger.Println("Server started at :8080")
