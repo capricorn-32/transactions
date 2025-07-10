@@ -8,6 +8,8 @@ import (
 	"transactions/repository"
 	"transactions/router"
 	"transactions/service"
+
+	_ "github.com/golang-migrate/migrate/v4"
 )
 
 func main() {
