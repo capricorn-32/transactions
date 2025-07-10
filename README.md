@@ -19,7 +19,8 @@ transactions/
   │           └── 20250710183542_accounts.sql
   ├── models/
   │     ├── account.go
-  │     └── transaction.go
+  │     ├── transaction.go
+  │     └── money.go
   ├── repository/
   │     ├── account_repository.go
   │     └── transaction_repository.go
