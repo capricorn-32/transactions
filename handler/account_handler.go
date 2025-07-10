@@ -2,6 +2,7 @@ package handler
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"strconv"
 	"transactions/service"
@@ -27,7 +28,36 @@ func (h *AccountHandler) CreateAccount(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusBadRequest)
 		json.NewEncoder(w).Encode(map[string]interface{}{
 			"success": false,
-			"error":   "invalid request",
+			"error":   "invalid request: could not decode JSON",
+		})
+		return
+	}
+	// Input validation
+	if req.AccountID <= 0 {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(map[string]interface{}{
+			"success": false,
+			"error":   "account_id must be a positive integer",
+		})
+		return
+	}
+	if req.InitialBalance == "" {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(map[string]interface{}{
+			"success": false,
+			"error":   "initial_balance is required",
+		})
+		return
+	}
+	var bal float64
+	if _, err := fmt.Sscanf(req.InitialBalance, "%f", &bal); err != nil || bal < 0 {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(map[string]interface{}{
+			"success": false,
+			"error":   "initial_balance must be a valid non-negative number",
 		})
 		return
 	}

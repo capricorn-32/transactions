@@ -2,6 +2,7 @@ package handler
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"transactions/service"
 )
@@ -25,7 +26,45 @@ func (h *TransactionHandler) SubmitTransaction(w http.ResponseWriter, r *http.Re
 		w.WriteHeader(http.StatusBadRequest)
 		json.NewEncoder(w).Encode(map[string]interface{}{
 			"success": false,
-			"error":   "invalid request",
+			"error":   "invalid request: could not decode JSON",
+		})
+		return
+	}
+	// Input validation
+	if req.SourceAccountID <= 0 || req.DestinationAccountID <= 0 {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(map[string]interface{}{
+			"success": false,
+			"error":   "source_account_id and destination_account_id must be positive integers",
+		})
+		return
+	}
+	if req.SourceAccountID == req.DestinationAccountID {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(map[string]interface{}{
+			"success": false,
+			"error":   "source_account_id and destination_account_id must not be the same",
+		})
+		return
+	}
+	if req.Amount == "" {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(map[string]interface{}{
+			"success": false,
+			"error":   "amount is required",
+		})
+		return
+	}
+	var amt float64
+	if _, err := fmt.Sscanf(req.Amount, "%f", &amt); err != nil || amt <= 0 {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(map[string]interface{}{
+			"success": false,
+			"error":   "amount must be a valid positive number",
 		})
 		return
 	}
