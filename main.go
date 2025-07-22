@@ -15,17 +15,18 @@ import (
 func main() {
 	logger := config.GetLogger()
 	cfg := config.LoadConfig()
-	postgresDB, err := db.NewDB(cfg)
+
+	db, err := db.NewDB(cfg)
 	if err != nil {
 		logger.Fatalf("failed to connect to db: %v", err)
 	}
-	defer postgresDB.Close()
+	defer db.Close()
 
-	accountRepo := repository.NewAccountRepository(postgresDB)
-	transactionRepo := repository.NewTransactionRepository(postgresDB)
+	accountRepo := repository.NewAccountRepository(db)
+	transactionRepo := repository.NewTransactionRepository(db)
 
 	accountService := service.NewAccountService(accountRepo)
-	transactionService := service.NewTransactionService(postgresDB, transactionRepo)
+	transactionService := service.NewTransactionService(transactionRepo)
 
 	h := handler.NewHandler(accountService, transactionService)
 	r := router.NewRouter(h)

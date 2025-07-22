@@ -1,51 +1,51 @@
-version: '3'
+version: "3"
 
 env:
-  DB_USER: "{{default `postgres` .DB_USER}}"
-  DB_PASSWORD: "{{default `postgres` .DB_PASSWORD}}"
-  DB_HOST: "{{default `localhost` .DB_HOST}}"
-  DB_PORT: "{{default `5433` .DB_PORT}}"
-  DB_NAME: "{{default `postgres` .DB_NAME}}"
-  DB_URL: "postgres://{{.DB_USER}}:{{.DB_PASSWORD}}@{{.DB_HOST}}:{{.DB_PORT}}/{{.DB_NAME}}?sslmode=disable"
+    DB_USER: "{{default `postgres` .DB_USER}}"
+    DB_PASSWORD: "{{default `postgres` .DB_PASSWORD}}"
+    DB_HOST: "{{default `localhost` .DB_HOST}}"
+    DB_PORT: "{{default `5432` .DB_PORT}}"
+    DB_NAME: "{{default `postgres` .DB_NAME}}"
+    DB_URL: "postgres://{{.DB_USER}}:{{.DB_PASSWORD}}@{{.DB_HOST}}:{{.DB_PORT}}/{{.DB_NAME}}?sslmode=disable"
 
 tasks:
-  default:
-    desc: Show all available tasks with descriptions and usage
-    cmds:
-      - echo 'Available Tasks:'
-      - task --list-all
+    default:
+        desc: Show all available tasks with descriptions and usage
+        cmds:
+            - echo 'Available Tasks:'
+            - task --list-all
 
-  setup:
-    desc: Install all dependencies (Go modules and golang-migrate)
-    cmds:
-      - echo "Installing Go dependencies..."
-      - go mod download
-      - echo "Installing golang-migrate..."
-      - go install -tags 'postgres' github.com/golang-migrate/migrate/v4/cmd/migrate@latest
-      - echo "Setup complete! You can now run 'task run' to start the application."
+    setup:
+        desc: Install all dependencies (Go modules and golang-migrate)
+        cmds:
+            - echo "Installing Go dependencies..."
+            - go mod download
+            - echo "Installing golang-migrate..."
+            - go install -tags 'postgres' github.com/golang-migrate/migrate/v4/cmd/migrate@latest
+            - echo "Setup complete! You can now run 'task run' to start the application."
 
-  build:
-    desc: Build the Go application
-    cmds:
-      - go build -o bin/transactions main.go
+    build:
+        desc: Build the Go application
+        cmds:
+            - go build -o bin/transactions main.go
 
-  run:
-    desc: Run the Go application
-    cmds:
-      - go run main.go
+    run:
+        desc: Run the Go application
+        cmds:
+            - go run main.go
 
-  test:
-    desc: Run all Go tests
-    cmds:
-      - go test ./... -v
+    test:
+        desc: Run all Go tests
+        cmds:
+            - go test ./... -v
 
-  migrate:
-    desc: Run all up migrations using golang-migrate
-    cmds:
-      - migrate -database "{{.DB_URL}}" -path db/migrations up
+    migrate:
+        desc: Run all up migrations using golang-migrate
+        cmds:
+            - migrate -database "{{.DB_URL}}" -path db/migrations up
 
-  reset:
-    desc: Rollback all migrations and then run all up migrations
-    cmds:
-      - migrate -database "{{.DB_URL}}" -path db/migrations down -all
-      - migrate -database "{{.DB_URL}}" -path db/migrations up
+    reset:
+        desc: Rollback all migrations and then run all up migrations
+        cmds:
+            - migrate -database "{{.DB_URL}}" -path db/migrations down -all
+            - migrate -database "{{.DB_URL}}" -path db/migrations up
