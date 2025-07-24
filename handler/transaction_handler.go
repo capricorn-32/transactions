@@ -21,56 +21,36 @@ func (h *TransactionHandler) SubmitTransaction(w http.ResponseWriter, r *http.Re
 		DestinationAccountID int64        `json:"destination_account_id"`
 		Amount               models.Money `json:"amount"`
 	}
+
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode(map[string]interface{}{
-			"success": false,
-			"error":   "invalid request: could not decode JSON",
-		})
+		WriteErrorResponse(w, http.StatusBadRequest, "invalid request: could not decode JSON")
 		return
 	}
+
 	// Input validation
 	if req.SourceAccountID <= 0 || req.DestinationAccountID <= 0 {
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode(map[string]interface{}{
-			"success": false,
-			"error":   "source_account_id and destination_account_id must be positive integers",
-		})
+		WriteErrorResponse(w, http.StatusBadRequest, "source_account_id and destination_account_id must be positive integers")
 		return
 	}
+
+	// Check if source and destination accounts are different
 	if req.SourceAccountID == req.DestinationAccountID {
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode(map[string]interface{}{
-			"success": false,
-			"error":   "source_account_id and destination_account_id must not be the same",
-		})
+		WriteErrorResponse(w, http.StatusBadRequest, "source_account_id and destination_account_id must not be the same")
 		return
 	}
+
+	// Check if amount is a valid positive number
 	if req.Amount.Decimal.LessThanOrEqual(models.Money{}.Decimal) {
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode(map[string]interface{}{
-			"success": false,
-			"error":   "amount must be a valid positive number",
-		})
+		WriteErrorResponse(w, http.StatusBadRequest, "amount must be a valid positive number")
 		return
 	}
+
+	// Log the error for debugging purposes
 	if err := h.Service.SubmitTransaction(req.SourceAccountID, req.DestinationAccountID, req.Amount); err != nil {
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode(map[string]interface{}{
-			"success": false,
-			"error":   err.Error(),
-		})
+		WriteErrorResponse(w, http.StatusInternalServerError, "failed to submit transaction: "+err.Error())
 		return
 	}
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusCreated)
-	json.NewEncoder(w).Encode(map[string]interface{}{
-		"success": true,
-		"message": "transaction submitted successfully",
-	})
+
+	// If everything is successful, return a success response
+	WriteCreatedResponse(w, "Transaction submitted successfully")
 }

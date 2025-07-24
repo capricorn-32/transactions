@@ -23,88 +23,52 @@ func (h *AccountHandler) CreateAccount(w http.ResponseWriter, r *http.Request) {
 		AccountID      int64  `json:"account_id"`
 		InitialBalance string `json:"initial_balance"`
 	}
+
+	// WriteErrorResponse is a convenience function for 400 Bad Request errors
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode(map[string]interface{}{
-			"success": false,
-			"error":   "invalid request: could not decode JSON",
-		})
+		WriteErrorResponse(w, http.StatusBadRequest, "invalid request: could not decode JSON")
 		return
 	}
+
 	// Input validation
 	if req.AccountID <= 0 {
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode(map[string]interface{}{
-			"success": false,
-			"error":   "account_id must be a positive integer",
-		})
-		return
+		WriteErrorResponse(w, http.StatusBadRequest, "account_id must be a positive integer")
 	}
+
 	if req.InitialBalance == "" {
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode(map[string]interface{}{
-			"success": false,
-			"error":   "initial_balance is required",
-		})
+		WriteErrorResponse(w, http.StatusBadRequest, "initial_balance is required")
 		return
 	}
+
 	var bal float64
 	if _, err := fmt.Sscanf(req.InitialBalance, "%f", &bal); err != nil || bal < 0 {
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode(map[string]interface{}{
-			"success": false,
-			"error":   "initial_balance must be a valid non-negative number",
-		})
+		WriteErrorResponse(w, http.StatusBadRequest, "initial_balance must be a valid non-negative number")
 		return
 	}
+
 	if err := h.Service.CreateAccount(req.AccountID, req.InitialBalance); err != nil {
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode(map[string]interface{}{
-			"success": false,
-			"error":   err.Error(),
-		})
+		WriteErrorResponse(w, http.StatusBadRequest, "failed to create account: "+err.Error())
 		return
 	}
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusCreated)
-	json.NewEncoder(w).Encode(map[string]interface{}{
-		"success": true,
-		"message": "account created successfully",
-	})
+	// If everything is successful, return a success response
+	WriteCreatedResponse(w, "Account created successfully")
 }
 
 func (h *AccountHandler) GetAccount(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	idStr := vars["account_id"]
 	accountID, err := strconv.ParseInt(idStr, 10, 64)
+	// WriteErrorResponse is a convenience function for 400 Bad Request errors
 	if err != nil {
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode(map[string]interface{}{
-			"success": false,
-			"error":   "invalid account id",
-		})
+		WriteErrorResponse(w, http.StatusBadRequest, "invalid account id: "+err.Error())
 		return
 	}
+
 	acc, err := h.Service.GetAccount(accountID)
 	if err != nil {
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusNotFound)
-		json.NewEncoder(w).Encode(map[string]interface{}{
-			"success": false,
-			"error":   err.Error(),
-		})
+		WriteErrorResponse(w, http.StatusNotFound, "account not found: "+err.Error())
 		return
 	}
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(map[string]interface{}{
-		"success": true,
-		"data":    acc,
-	})
+
+	WriteSuccessResponse(w, http.StatusOK, "Account retrieved successfully", acc)
 }
